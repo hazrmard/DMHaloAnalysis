@@ -10,7 +10,7 @@ plt.ioff()
 def bgc_to_png(path, axes='xy', resolution=1024, outputdir='output'):
     if not os.path.isdir(outputdir):
         os.makedirs(outputdir)
-    H = Halos(path)
+    H = Halos(path, verbose=False)
     H.read_data(level=1, strict=True)
     coords = []
     for c in axes:
@@ -22,4 +22,20 @@ def bgc_to_png(path, axes='xy', resolution=1024, outputdir='output'):
             coords.append(np.array([halo.z for halo in H.g]))
     hist_array, _, _ = np.histogram2d(coords[0], coords[1], bins=resolution,
                         range=[[0,H.header[0].box_size], [0, H.header[0].box_size]])
-    mpimg.imsave(os.path.join(outputdir, str(H.header[0].snapshot)+'.png'), hist_array)
+    #mpimg.imsave(os.path.join(outputdir, str(H.header[0].snapshot)+'.png'), hist_array, cmap=plt.cm.binary)
+    plt.imshow(hist_array, cmap=plt.cm.binary)
+    plt.axis('off')
+    fig = plt.gcf()
+    fig.set_size_inches(resolution/10.,resolution/10.)
+    plt.savefig(os.path.join(outputdir, str(H.header[0].snapshot)+'.png'), dpi=100,
+                pad_inches=0.0)
+
+
+
+def test():
+    import config
+    bgc_to_png(config.PATH+'*100.bgc2')
+
+
+if __name__=='__main__':
+    test()
