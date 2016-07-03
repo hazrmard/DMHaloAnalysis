@@ -1,7 +1,7 @@
 import multiprocessing as mp
 
 
-class Parallel:
+class Parallel(object):
 
     
     def __init__(self, procs=1):

@@ -3,11 +3,42 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import numpy as np
 import os
+import glob
+from parallel import Parallel
+import multiprocessing as mp
+import time
 
 
 plt.ioff()
 
-def bgc_to_png(path, axes='xy', resolution=1024, outputdir='output'):
+
+class BatchSnapshot(Parallel):
+
+    def __init__(self, dirpath='./', procs=1, padding=0):
+        self.dirpath = dirpath
+        super(BatchSnapshot, self).__init__(procs)
+        if os.path.isdir(dirpath):
+            dirpath = os.path.join(dirpath, '*.bgc2')
+        files = glob.glob(dirpath)
+        self.set_work_packages(files)
+        self.set_common_args((mp.Lock(), padding))
+
+    
+    def parallel_process(self, pkg, parallel_arg):
+        lock = parallel_arg[0]
+        padding = parallel_arg[1]
+        try:
+            bgc_to_png(pkg, name_padding=padding)
+            lock.acquire()
+            print(str(os.getpid()) + ' - ' + time.ctime() + ' : ' + os.path.split(pkg)[1] + ' : Done')
+            lock.release()
+        except IOError as e:
+            lock.acquire()
+            print(str(os.getpid()) + ' - ' + time.ctime() + ' : ' + os.path.split(pkg)[1] + ' : ' + str(e))
+            lock.release()
+
+
+def bgc_to_png(path, axes='xy', resolution=1024, outputdir='output', name_padding=0):
     if not os.path.isdir(outputdir):
         os.makedirs(outputdir)
     H = Halos(path, verbose=False)
@@ -26,12 +57,14 @@ def bgc_to_png(path, axes='xy', resolution=1024, outputdir='output'):
     fig = plt.figure(dpi=100, tight_layout=True, frameon=False, figsize=(resolution/100.,resolution/100.))
     fig.figimage(hist_array, cmap=plt.cm.binary)
     fig.text(0.8,0.1,'z=%.3f' % H.header[0].redshift, size='medium', backgroundcolor='white', alpha=0.5)
-    plt.savefig(os.path.join(outputdir, str(H.header[0].snapshot)+'.png'))
+    plt.savefig(os.path.join(outputdir, str(H.header[0].snapshot).zfill(name_padding)+'.png'))
 
 
 def test():
     import config
-    bgc_to_png(config.PATH+'*100.bgc2')
+    print('Instantiating BatchSnapshot')
+    B = BatchSnapshot(config.PATH+'*_0[01]*.bgc2', 2, 5)
+    B.begin()
 
 
 if __name__=='__main__':
