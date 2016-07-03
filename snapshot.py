@@ -23,13 +23,15 @@ def bgc_to_png(path, axes='xy', resolution=1024, outputdir='output'):
     hist_array, _, _ = np.histogram2d(coords[0], coords[1], bins=resolution,
                         range=[[0,H.header[0].box_size], [0, H.header[0].box_size]])
     #mpimg.imsave(os.path.join(outputdir, str(H.header[0].snapshot)+'.png'), hist_array, cmap=plt.cm.binary)
-    plt.imshow(hist_array, cmap=plt.cm.binary)
-    plt.axis('off')
-    fig = plt.gcf()
-    fig.set_size_inches(resolution/10.,resolution/10.)
-    plt.savefig(os.path.join(outputdir, str(H.header[0].snapshot)+'.png'), dpi=100,
-                pad_inches=0.0)
-
+    #plt.imshow(hist_array, cmap=plt.cm.binary)
+    fig = plt.figure(dpi=100, tight_layout=True, frameon=False, figsize=(resolution/100.,resolution/100.))
+    #fig.imshow(hist_array)
+    fig.figimage(hist_array)
+    #plt.axis('off')
+    #fig = plt.gcf()
+    #fig.gca().set_frame_on(False)
+    #fig.set_size_inches(resolution/10.,resolution/10.)
+    plt.savefig(os.path.join(outputdir, str(H.header[0].snapshot)+'.png'))
 
 
 def test():
