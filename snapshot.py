@@ -20,6 +20,7 @@ class BatchSnapshot(Parallel):
         if os.path.isdir(dirpath):
             dirpath = os.path.join(dirpath, '*.bgc2')
         files = glob.glob(dirpath)
+        #r = temp_fix()
         self.set_work_packages(files)
         self.set_common_args((mp.Lock(), padding))
 
@@ -37,6 +38,18 @@ class BatchSnapshot(Parallel):
             print(str(os.getpid()) + ' - ' + time.ctime() + ' : ' + os.path.split(pkg)[1] + ' : ' + str(e))
             lock.release()
 
+def temp_fix():
+    import config
+    import re
+    snaps = glob.glob('output/*.png')
+    snap_files = [int(os.path.split(p)[1][:-4]) for p in snaps]
+    bgc = glob.glob(config.PATH+'*.bgc2')
+    bgc_files = []
+    for f in bgc:
+      res = re.search('.*_([0-9]+)\.bgc2$', f)
+      if int(res.group(1)) not in snap_files:
+          bgc_files.append(f)
+    return bgc_files
 
 def bgc_to_png(path, axes='xy', resolution=1024, outputdir='output', name_padding=0):
     if not os.path.isdir(outputdir):
@@ -58,14 +71,16 @@ def bgc_to_png(path, axes='xy', resolution=1024, outputdir='output', name_paddin
     fig.figimage(hist_array, cmap=plt.cm.binary)
     fig.text(0.8,0.1,'z=%.3f' % H.header[0].redshift, size='medium', backgroundcolor='white', alpha=0.5)
     plt.savefig(os.path.join(outputdir, str(H.header[0].snapshot).zfill(name_padding)+'.png'))
+    plt.close(fig)
 
 
-def test():
+def job():
     import config
     print('Instantiating BatchSnapshot')
-    B = BatchSnapshot(config.PATH+'*_0[01]*.bgc2', 2, 5)
+    B = BatchSnapshot(config.PATH+'*.bgc2', 8, 5)
     B.begin()
+    B.end()
 
 
 if __name__=='__main__':
-    test()
+    job()
