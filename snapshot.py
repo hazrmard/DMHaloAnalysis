@@ -7,29 +7,32 @@ import glob
 from parallel import Parallel
 import multiprocessing as mp
 import time
+import argparse
 
 
-plt.ioff()
+plt.ioff()  # turn interactive mode off
 
 
 class BatchSnapshot(Parallel):
-
-    def __init__(self, dirpath='./', procs=1, padding=0):
+    '''class that takes a directory of bgc2 files and converts them to png files
+        with a certain 0-padding over some number of processes'''
+    def __init__(self, dirpath='./', procs=1, padding=0, resolution=1024, output='output'):
         self.dirpath = dirpath
         super(BatchSnapshot, self).__init__(procs)
         if os.path.isdir(dirpath):
             dirpath = os.path.join(dirpath, '*.bgc2')
         files = glob.glob(dirpath)
-        #r = temp_fix()
         self.set_work_packages(files)
-        self.set_common_args((mp.Lock(), padding))
+        self.set_common_args((mp.Lock(), padding, resolution, output))
 
-    
+
     def parallel_process(self, pkg, parallel_arg):
         lock = parallel_arg[0]
         padding = parallel_arg[1]
+        res = parallel_arg[2]
+        output = parallel_arg[3]
         try:
-            bgc_to_png(pkg, name_padding=padding)
+            bgc_to_png(pkg, name_padding=padding, resolution=res, output=output)
             lock.acquire()
             print(str(os.getpid()) + ' - ' + time.ctime() + ' : ' + os.path.split(pkg)[1] + ' : Done')
             lock.release()
@@ -38,20 +41,30 @@ class BatchSnapshot(Parallel):
             print(str(os.getpid()) + ' - ' + time.ctime() + ' : ' + os.path.split(pkg)[1] + ' : ' + str(e))
             lock.release()
 
-def temp_fix():
-    import config
-    import re
-    snaps = glob.glob('output/*.png')
-    snap_files = [int(os.path.split(p)[1][:-4]) for p in snaps]
-    bgc = glob.glob(config.PATH+'*.bgc2')
-    bgc_files = []
-    for f in bgc:
-      res = re.search('.*_([0-9]+)\.bgc2$', f)
-      if int(res.group(1)) not in snap_files:
-          bgc_files.append(f)
-    return bgc_files
+
+# def temp_fix():
+#   '''returns a list of bgc2 files not yet converted to png due to program
+#        crash. Naming conventions used are specific to my case.'''
+#     import config
+#     import re
+#     snaps = glob.glob('output/*.png')
+#     snap_files = [int(os.path.split(p)[1][:-4]) for p in snaps]
+#     bgc = glob.glob(config.PATH+'*.bgc2')
+#     bgc_files = []
+#     for f in bgc:
+#       res = re.search('.*_([0-9]+)\.bgc2$', f)
+#       if int(res.group(1)) not in snap_files:
+#           bgc_files.append(f)
+#     return bgc_files
 
 def bgc_to_png(path, axes='xy', resolution=1024, outputdir='output', name_padding=0):
+    '''converts a single bgc2 file to png. Outputs are named <snapshot #>.png
+        :path: filepath to bgc3 file,
+        :axes: axes to take the snapshot across, xy means looking into the page from z,
+        :resolution: number of bins to use along each axis to put halos in, also res. of output pic,
+        :outputdir: name of output directory
+        :name_padding: number of zeroes to pad outputfiles with
+    '''
     if not os.path.isdir(outputdir):
         os.makedirs(outputdir)
     H = Halos(path, verbose=False)
@@ -74,13 +87,16 @@ def bgc_to_png(path, axes='xy', resolution=1024, outputdir='output', name_paddin
     plt.close(fig)
 
 
-def job():
-    import config
-    print('Instantiating BatchSnapshot')
-    B = BatchSnapshot(config.PATH+'*.bgc2', 8, 5)
-    B.begin()
-    B.end()
-
-
 if __name__=='__main__':
-    job()
+    a = argparse.ArgumentParser(prog="Convert BGC2 to PNG",
+        description='Convert a directory of snapshots in BGC2 format to PNG \
+                    over multiple processes')
+    a.add_argument('-n', help='Number of processes. Default: 1.', type=int)
+    a.add_argument('-r', help='Resolution of output in pixels. Default: 1024.', type=int)
+    a.add_argument('-d', help='Directory of BGC2 files. Accepts wildcards. Default: current directory.', type=str)
+    a.add_argument('-p', help='Size of 0-padding out output files. Default: 0.', type=int)
+    a.add_argument('-o', help='Output directory. Default: output/')
+    args = a.parse_args()
+    P = BatchSnapshot(dirpath=args.d, procs=args.n, resolution=args.r, output=args.o, padding=args.p)
+    P.begin()
+    P.end()
