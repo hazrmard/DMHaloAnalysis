@@ -10,7 +10,7 @@ converted into a video using ffmpeg.
 ## Dependencies
 * Numpy
 * Matplotlib
-* (DarkMatterHalos)[https://github.com/hazrmard/DarkMatterHalos] (for i/o)
+* [DarkMatterHalos](https://github.com/hazrmard/DarkMatterHalos) (for i/o)
 
 ## Usage
 
