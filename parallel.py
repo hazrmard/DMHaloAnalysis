@@ -9,11 +9,12 @@ class Parallel(object):
     '''
 
 
-    def __init__(self, procs=1):
+    def __init__(self, procs=1, _type='main'):
         self.queue = mp.Queue()     # accessed by each process
         self.workers = []           # list of active processes
         self.procs = procs          # number of processes
         self.parallel_arg = None    # args shared between processes
+        self._type = _type          # whether child process or spawning process
 
 
     def set_work_packages(self, pkgs):
@@ -47,7 +48,7 @@ class Parallel(object):
     def begin(self):
         '''starts processing after all parameters have been set'''
         for i in range(self.procs):
-            p = mp.Process(target=self.__class__().worker, args=(self.queue, self.parallel_arg))
+            p = mp.Process(target=self.__class__(_type='child').worker, args=(self.queue, self.parallel_arg))
             self.workers.append(p)
             p.start()
 

@@ -16,9 +16,10 @@ plt.ioff()  # turn interactive mode off
 class BatchSnapshot(Parallel):
     '''class that takes a directory of bgc2 files and converts them to png files
         with a certain 0-padding over some number of processes'''
-    def __init__(self, dirpath='./', procs=1, padding=0, resolution=1024, output='output'):
+    def __init__(self, dirpath='./', procs=1, padding=0, resolution=1024, output='output', \
+                _type='main'):
         self.dirpath = dirpath
-        super(BatchSnapshot, self).__init__(procs)
+        super(BatchSnapshot, self).__init__(procs, _type)
         if os.path.isdir(dirpath):
             dirpath = os.path.join(dirpath, '*.bgc2')
         files = glob.glob(dirpath)
@@ -32,7 +33,7 @@ class BatchSnapshot(Parallel):
         res = parallel_arg[2]
         output = parallel_arg[3]
         try:
-            bgc_to_png(pkg, name_padding=padding, resolution=res, output=output)
+            bgc_to_png(pkg, name_padding=padding, resolution=res, outputdir=output)
             lock.acquire()
             print(str(os.getpid()) + ' - ' + time.ctime() + ' : ' + os.path.split(pkg)[1] + ' : Done')
             lock.release()
@@ -91,12 +92,12 @@ if __name__=='__main__':
     a = argparse.ArgumentParser(prog="Convert BGC2 to PNG",
         description='Convert a directory of snapshots in BGC2 format to PNG \
                     over multiple processes')
-    a.add_argument('-n', help='Number of processes. Default: 1.', type=int)
-    a.add_argument('-r', help='Resolution of output in pixels. Default: 1024.', type=int)
-    a.add_argument('-d', help='Directory of BGC2 files. Accepts wildcards. Default: current directory.', type=str)
-    a.add_argument('-p', help='Size of 0-padding out output files. Default: 0.', type=int)
-    a.add_argument('-o', help='Output directory. Default: output/')
+    a.add_argument('-n', help='Number of processes. Default: 1.', type=int, default=1)
+    a.add_argument('-r', help='Resolution of output in pixels. Default: 1024.', type=int, default=1024)
+    a.add_argument('-p', help='Directory of BGC2 files. Accepts wildcards. Default: current directory.', type=str, default='./')
+    a.add_argument('-z', help='Size of 0-padding out output files. Default: 0.', type=int, default=0)
+    a.add_argument('-o', help='Output directory. Default: output/', type=str, default='output/')
     args = a.parse_args()
-    P = BatchSnapshot(dirpath=args.d, procs=args.n, resolution=args.r, output=args.o, padding=args.p)
+    P = BatchSnapshot(dirpath=args.p, procs=args.n, resolution=args.r, output=args.o, padding=args.z)
     P.begin()
     P.end()
