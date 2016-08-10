@@ -89,7 +89,7 @@ def bgc_to_png(path, axes='xy', resolution=1024, outputdir='output', name_paddin
 
 
 if __name__=='__main__':
-    a = argparse.ArgumentParser(prog="Convert BGC2 to PNG",
+    a = argparse.ArgumentParser(prog="snapshot.py",
         description='Convert a directory of snapshots in BGC2 format to PNG \
                     over multiple processes')
     a.add_argument('-n', help='Number of processes. Default: 1.', type=int, default=1)
