@@ -7,6 +7,7 @@ import csv
 import numpy as np
 import argparse
 import time
+import config
 
 class SharedParticles(Parallel):
 
@@ -46,7 +47,7 @@ class SharedParticles(Parallel):
             s.update(halo.particles.id)
         unique = len(s)
         snap = H.header[0].snapshot
-        shared = 1. - (unique/total)  # fraction of particles that are shared
+        shared = (total / unique) - 1.  # fraction of particles that are shared
         return (snap, shared)
 
     def parallel_process(self, pkg, parallel_arg):
@@ -81,13 +82,13 @@ class SharedParticles(Parallel):
 
 
 if __name__=='__main__':
-    a = argparse.ArgumentParser(prog="Calculate shared particles in halos",
+    a = argparse.ArgumentParser(prog="sharedparts.py",
         description='Tally the fraction of particles (by id) that occur in multiple\
                     halos in a single snapshot.')
     a.add_argument('-n', help='Number of processes. Default: 1.', type=int, default=1)
     a.add_argument('-p', help='Directory of BGC2 files. Accepts wildcards. Default: current directory.', type=str, default='./')
-    a.add_argument('-o', help='Output file. Default: output/shared.csv', type=str, default='output/shared.csv')
     a.add_argument('-g', help='Group files w/ shared subversion numbers. Default: all files separate.', type=int, default=0)
+    a.add_argument('-o', help='Output file. Default: output/shared.csv', type=str, default='output_shared/shared.csv')
     args = a.parse_args()
     S = SharedParticles(files=args.p, output=args.o, procs=args.n, file_group_level=args.g)
     S.begin()
