@@ -17,15 +17,26 @@ class BatchSnapshot(Parallel):
     '''class that takes a directory of bgc2 files and converts them to png files
         with a certain 0-padding over some number of processes'''
     def __init__(self, dirpath='./', procs=1, padding=0, resolution=1024, output='output', \
-                _type='main'):
+                file_group_level=0, _type='main'):
         self.dirpath = dirpath
         super(BatchSnapshot, self).__init__(procs, _type)
         if os.path.isdir(dirpath):
             dirpath = os.path.join(dirpath, '*.bgc2')
-        files = glob.glob(dirpath)
-        self.set_work_packages(files)
+        self.set_work_packages(dirpath, file_group_level)
         self.set_common_args((mp.Lock(), padding, resolution, output))
 
+    def set_work_packages(self, pkgs, file_group_level=0):
+        """:pkgs: wildcard file name for *.bgc2 files
+        :file_group_level: what subversion # to group files on i.e.1.*.* or 1.1.*,
+            =0 means all files are separate."""
+        if self._type == 'main':
+            if file_group_level==0:
+                expanded_pkgs = glob.glob(pkgs)
+                if len(expanded_pkgs)==0:
+                    raise IOError('No matching files found. Make sure path to files is correct')
+            elif file_group_level>0:
+                expanded_pkgs = helpers.generate_file_groups(pkgs, file_group_level, ignore_ext=True)
+            super(BatchSnapshot, self).set_work_packages(expanded_pkgs)
 
     def parallel_process(self, pkg, parallel_arg):
         lock = parallel_arg[0]
@@ -60,7 +71,7 @@ class BatchSnapshot(Parallel):
 
 def bgc_to_png(path, axes='xy', resolution=1024, outputdir='output', name_padding=0):
     '''converts a single bgc2 file to png. Outputs are named <snapshot #>.png
-        :path: filepath to bgc3 file,
+        :path: filepath to bgc2 file,
         :axes: axes to take the snapshot across, xy means looking into the page from z,
         :resolution: number of bins to use along each axis to put halos in, also res. of output pic,
         :outputdir: name of output directory
@@ -97,7 +108,8 @@ if __name__=='__main__':
     a.add_argument('-p', help='Directory of BGC2 files. Accepts wildcards. Default: current directory.', type=str, default='./')
     a.add_argument('-z', help='Size of 0-padding out output files. Default: 0.', type=int, default=0)
     a.add_argument('-o', help='Output directory. Default: output/', type=str, default='output/')
+    a.add_argument('-g', help='Group files w/ shared subversion numbers. Default: all files separate.', type=int, default=0)
     args = a.parse_args()
-    P = BatchSnapshot(dirpath=args.p, procs=args.n, resolution=args.r, output=args.o, padding=args.z)
+    P = BatchSnapshot(dirpath=args.p, procs=args.n, resolution=args.r, output=args.o, padding=args.z, file_group_level=args.g)
     P.begin()
     P.end()
