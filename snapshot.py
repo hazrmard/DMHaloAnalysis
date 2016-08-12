@@ -6,7 +6,7 @@ import os
 import glob
 from parallel import Parallel
 import multiprocessing as mp
-import time
+from datetime import datetime
 import argparse
 
 
@@ -46,11 +46,11 @@ class BatchSnapshot(Parallel):
         try:
             bgc_to_png(pkg, name_padding=padding, resolution=res, outputdir=output)
             lock.acquire()
-            print(str(os.getpid()) + ' - ' + time.ctime() + ' : ' + os.path.split(pkg)[1] + ' : Done')
+            print(str(os.getpid()) + ' - ' + str(datetime.now()) + ' : ' + os.path.split(pkg)[1] + ' : Done')
             lock.release()
         except IOError as e:
             lock.acquire()
-            print(str(os.getpid()) + ' - ' + time.ctime() + ' : ' + os.path.split(pkg)[1] + ' : ' + str(e))
+            print(str(os.getpid()) + ' - ' + str(datetime.now()) + ' : ' + os.path.split(pkg)[1] + ' : ' + str(e))
             lock.release()
 
 
@@ -110,6 +110,11 @@ if __name__=='__main__':
     a.add_argument('-o', help='Output directory. Default: output/', type=str, default='output/')
     a.add_argument('-g', help='Group files w/ shared subversion numbers. Default: all files separate.', type=int, default=0)
     args = a.parse_args()
+    starttime = datetime.now()
+    print('Started:\t' + str(starttime))
     P = BatchSnapshot(dirpath=args.p, procs=args.n, resolution=args.r, output=args.o, padding=args.z, file_group_level=args.g)
     P.begin()
     P.end()
+    endtime = datetime.now()
+    print('\nEnded:\t\t' + str(endtime))
+    print('Duration:\t' + str(endtime-starttime))

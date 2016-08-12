@@ -6,7 +6,7 @@ import os
 import csv
 import numpy as np
 import argparse
-import time
+from datetime import datetime
 import config
 
 class SharedParticles(Parallel):
@@ -68,12 +68,12 @@ class SharedParticles(Parallel):
             ans = self.shared_particles(pkg)
             results_queue.put(ans)
             lock.acquire()
-            print(str(os.getpid()) + ' - ' + time.ctime() + ': ' + 'Done - Snapshot:'+ str(ans[0]) \
+            print(str(os.getpid()) + ' - ' + str(datetime.now()) + ': ' + 'Done - Snapshot:'+ str(ans[0]) \
                         + '\tShared '+ '{0:.3}'.format(ans[1]))
             lock.release()
         except Exception as e:
             lock.acquire()
-            print(str(os.getpid()) + ' - ' + time.ctime() + ': ' + str(e))
+            print(str(os.getpid()) + ' - ' + str(datetime.now()) + ': ' + str(e))
             lock.release()
         return
 
@@ -115,7 +115,12 @@ if __name__=='__main__':
     a.add_argument('-o', help='Output file. Default: output_shared/shared.csv', type=str, default='output_shared/shared.csv')
     a.add_argument('-l', help='Directory of \'.list.parents\' files. Filenames should have snapshot #s. Default: empty', type=str, default='')
     args = a.parse_args()
+    starttime = datetime.now()
+    print('Started:\t' + str(starttime))
     S = SharedParticles(files=args.p, output=args.o, procs=args.n, file_group_level=args.g, list_parents_path=args.l)
     S.begin()
     S.end()
     S.post_process()
+    endtime = datetime.now()
+    print('\nEnded:\t\t' + str(endtime))
+    print('Duration:\t' + str(endtime-starttime))
