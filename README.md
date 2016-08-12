@@ -15,7 +15,7 @@ The following tools have been developed thus far:
 ## Usage
 
 #### Snapshot  
-`snapshot.py` plots the positions of all halos on an area corresponding to the simulation box size. Output is a ong file with the redshift number superimposed on the image.
+`snapshot.py` plots the positions of all halos on an area corresponding to the simulation box size. Output is a png file with the redshift number superimposed on the image.
 ```
 > python snapshot.py -h     # gives list of arguments and defaults
 > python snapshot.py -p DIRPATH -n NPROCS -o OUTDIR -r RESOLUTION -z 0-padding
