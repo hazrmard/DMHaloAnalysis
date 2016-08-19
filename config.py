@@ -1,5 +1,6 @@
 import matplotlib
 matplotlib.use('Agg')
+import numpy as np
 
 # for personal convenience, not used anywhere in code
 PATH = "/fs2/shared/new_130_mpc_box/hires/5045/rockstar_halos/so_m200b/full_res/bgc2_halocats/" # w/o particle data
@@ -15,3 +16,11 @@ LIST_PARENTS_FORMAT = { 'names': True,
                         'replace_space': '_',
                         'dtype': int,
                         }
+
+SHARED_CSV_DTYPE = np.dtype([('snapshot', int), ('shared', float)])
+
+
+DPI = 100
+RESOLUTION = 1024
+INPUT_DIR = './'
+OUTPUT_DIR = 'output'

@@ -1,3 +1,4 @@
+import config
 from halos import Halos
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
@@ -103,12 +104,12 @@ if __name__=='__main__':
     a = argparse.ArgumentParser(prog="snapshot.py",
         description='Convert a directory of snapshots in BGC2 format to PNG \
                     over multiple processes')
-    a.add_argument('-n', help='Number of processes. Default: 1.', type=int, default=1)
-    a.add_argument('-r', help='Resolution of output in pixels. Default: 1024.', type=int, default=1024)
-    a.add_argument('-p', help='Directory of BGC2 files. Accepts wildcards. Default: current directory.', type=str, default='./')
-    a.add_argument('-z', help='Size of 0-padding out output files. Default: 0.', type=int, default=0)
-    a.add_argument('-o', help='Output directory. Default: output/', type=str, default='output/')
-    a.add_argument('-g', help='Group files w/ shared subversion numbers. Default: all files separate.', type=int, default=0)
+    a.add_argument('-n', metavar='NUMTHREAD', help='Number of processes. Default: 1.', type=int, default=1)
+    a.add_argument('-r', metavar='RESOLUTION', help='Resolution of output in pixels. Default: ' + str(config.RESOLUTION) + '.', type=int, default=config.RESOLUTION)
+    a.add_argument('-p', metavar='INPUTPATH', help='Directory of BGC2 files. Accepts wildcards. Default: ' + config.INPUT_DIR, type=str, default=config.INPUT_DIR)
+    a.add_argument('-z', metavar='ZEROPADDING', help='Size of 0-padding out output files. Default: 0.', type=int, default=0)
+    a.add_argument('-o', metavar='OUTPATH', help='Output directory. Default: ' + config.OUTPUT_DIR, type=str, default=config.OUTPUT_DIR)
+    a.add_argument('-g', metavar='GROUPVERSIONS', help='Group files w/ shared subversion numbers (1=>x.y.*). Default: all files separate.', type=int, default=0)
     args = a.parse_args()
     starttime = datetime.now()
     print('Started:\t' + str(starttime))
