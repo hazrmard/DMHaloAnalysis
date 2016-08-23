@@ -91,7 +91,7 @@ class SharedParticles(Parallel):
         else:
             data = np.array([(float(row[0]), float(row[1])*100) for row in data], dtype=config.SHARED_CSV_DTYPE)
 
-        f = Figure(dpi=config.DPI, figsize=(config.INCHES*1.5, config.INCHES))
+        f = Figure(dpi=config.DPI, figsize=(config.INCHES, config.INCHES))
         canvas = FigureCanvas(f)
 
         # ax_scatter = f.add_subplot(211)
@@ -113,6 +113,15 @@ class SharedParticles(Parallel):
         ax_hist.grid(True, 'both')
         ax_hist.hist(data['shared'], bins=50, normed=True, orientation='horizontal',
                         color='r', histtype='step')
+
+        ax_hist = divider.append_axes('top', 0.2*config.INCHES, sharex=ax_scatter, pad=config.INCHES*0.04)
+        [label.set_visible(False) for label in ax_hist.get_xticklabels()]
+        ax_hist.set_ylabel('Relative frequency', size='small')
+        ax_hist.set_title('Redshift distribution', size='medium')
+        ax_hist.set_xlim([0, max(data['redshift'])])
+        ax_hist.grid(True, 'both')
+        ax_hist.hist(data['redshift'], bins=50, normed=True, orientation='vertical',
+                        color='g', histtype='step')
 
         canvas.print_figure(outfile, dpi=config.DPI, bbox_inches='tight')
 

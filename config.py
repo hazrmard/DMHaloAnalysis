@@ -22,7 +22,7 @@ SHARED_CSV_DTYPE = np.dtype([('redshift', float), ('shared', float)])
 
 
 DPI = 100
-RESOLUTION = 1024
+RESOLUTION = 1366
 INCHES = RESOLUTION / DPI
 INPUT_DIR = './'
 OUTPUT_DIR = 'output'
