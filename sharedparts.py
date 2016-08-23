@@ -117,14 +117,12 @@ class SharedParticles(Parallel):
         try:
             ans = self.shared_particles(pkg)
             results_queue.put(ans)
-            lock.acquire()
-            print(str(os.getpid()) + ' - ' + str(datetime.now()) + ': ' + 'Done - Snapshot:'+ str(ans[0]) \
-                        + '\tShared '+ '{0:.3}'.format(ans[1]))
-            lock.release()
+            with lock:
+                print(str(os.getpid()) + ' - ' + str(datetime.now()) + ': ' + 'Done - Snapshot:'+ str(ans[0]) \
+                            + '\tShared '+ '{0:.3}'.format(ans[1]))
         except Exception as e:
-            lock.acquire()
-            print(str(os.getpid()) + ' - ' + str(datetime.now()) + ': ' + str(e))
-            lock.release()
+            with lock:
+                print(str(os.getpid()) + ' - ' + str(datetime.now()) + ': ' + str(e))
         return
 
 
