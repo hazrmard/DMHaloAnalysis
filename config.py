@@ -1,3 +1,4 @@
+from __future__ import division
 import matplotlib
 matplotlib.use('Agg')
 import numpy as np
@@ -17,10 +18,11 @@ LIST_PARENTS_FORMAT = { 'names': True,
                         'dtype': int,
                         }
 
-SHARED_CSV_DTYPE = np.dtype([('snapshot', int), ('shared', float)])
+SHARED_CSV_DTYPE = np.dtype([('redshift', float), ('shared', float)])
 
 
 DPI = 100
 RESOLUTION = 1024
+INCHES = RESOLUTION / DPI
 INPUT_DIR = './'
 OUTPUT_DIR = 'output'

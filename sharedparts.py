@@ -7,6 +7,7 @@ import os
 import csv
 import numpy as np
 from matplotlib.figure import Figure
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 import argparse
 from datetime import datetime
@@ -86,24 +87,32 @@ class SharedParticles(Parallel):
                     r = csv.reader(csvfile)
                     if has_header:
                         r.next()
-                    data = np.append(data, np.array([(int(row[0]), float(row[1])*100) for row in r], dtype=config.SHARED_CSV_DTYPE))
+                    data = np.append(data, np.array([(float(row[0]), float(row[1])*100) for row in r], dtype=config.SHARED_CSV_DTYPE))
         else:
-            data = np.array([(int(row[0]), float(row[1])*100) for row in data], dtype=config.SHARED_CSV_DTYPE)
+            data = np.array([(float(row[0]), float(row[1])*100) for row in data], dtype=config.SHARED_CSV_DTYPE)
 
-        f = Figure(dpi=config.DPI, figsize=(config.RESOLUTION/config.DPI, config.RESOLUTION/config.DPI))
+        f = Figure(dpi=config.DPI, figsize=(config.INCHES*1.5, config.INCHES))
         canvas = FigureCanvas(f)
 
-        ax_scatter = f.add_subplot(211)
-        ax_scatter.set_xlabel('Snapshot', size='small')
+        # ax_scatter = f.add_subplot(211)
+        ax_scatter = f.add_subplot(111)
+        ax_scatter.set_xlabel('Redshift', size='small')
         ax_scatter.set_ylabel('Shared / %', size='small')
-        ax_scatter.set_title('Shared particle vs. Snapshot', size='medium')
-        ax_scatter.scatter(data['snapshot'], data['shared'])
+        ax_scatter.set_title('Shared particle vs. Redshift', size='medium')
+        ax_scatter.set_xlim([0, max(data['redshift'])])
+        ax_scatter.set_ylim([0, max(data['shared'])])
+        ax_scatter.grid(True, 'both')
+        ax_scatter.scatter(data['redshift'], data['shared'])
 
-        ax_hist = f.add_subplot(212)
-        ax_hist.set_xlabel('Shared / %', size='small')
-        ax_hist.set_ylabel('Frequency', size='small')
-        ax_hist.set_title('Shared frequency distribution', size='medium')
-        ax_hist.hist(data['shared'], bins=50, normed=True)
+        divider = make_axes_locatable(ax_scatter)
+        ax_hist = divider.append_axes('right', 0.2*config.INCHES, sharey=ax_scatter, pad=config.INCHES*0.02)
+        [label.set_visible(False) for label in ax_hist.get_yticklabels()]
+        ax_hist.set_xlabel('Relative frequency', size='small')
+        ax_hist.set_title('Shared particle distribution', size='medium')
+        ax_hist.set_ylim([0, max(data['shared'])])
+        ax_hist.grid(True, 'both')
+        ax_hist.hist(data['shared'], bins=50, normed=True, orientation='horizontal',
+                        color='r', histtype='step')
 
         canvas.print_figure(outfile, dpi=config.DPI, bbox_inches='tight')
 
