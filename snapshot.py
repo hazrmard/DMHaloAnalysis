@@ -48,11 +48,11 @@ class BatchSnapshot(Parallel):
         try:
             bgc_to_png(pkg, name_padding=padding, resolution=res, outputdir=output)
             lock.acquire()
-            print(str(os.getpid()) + ' - ' + str(datetime.now()) + ' : ' + os.path.split(pkg)[1] + ' : Done')
+            print(str(os.getpid()) + ' - ' + str(datetime.now()) + ' : ' + ' : Done')
             lock.release()
         except IOError as e:
             lock.acquire()
-            print(str(os.getpid()) + ' - ' + str(datetime.now()) + ' : ' + os.path.split(pkg)[1] + ' : ' + str(e))
+            print(str(os.getpid()) + ' - ' + str(datetime.now()) + ' : ' + ' : ' + str(e))
             lock.release()
 
 
