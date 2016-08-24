@@ -1,5 +1,6 @@
 import config
 from halos import Halos
+from halos import helpers
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import numpy as np
