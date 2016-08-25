@@ -57,9 +57,9 @@ class SharedParticles(Parallel):
             total += len(halo.particles.id)
             s.update(halo.particles.id)
         unique = len(s)
-        snap = H.header[0].snapshot
+        redshift = H.header[0].redshift
         shared = (total / unique) - 1.  # fraction of particles that are shared
-        return (snap, shared)
+        return (redshift, shared)
 
 
     def only_fof_halos(self, filepath):
